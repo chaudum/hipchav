@@ -17,7 +17,7 @@ import optparse
 import json
 from collections import namedtuple
 import urllib
-
+import ConfigParser
 import requests
 
 ApiToken = namedtuple('ApiToken', 'token version')
@@ -37,9 +37,28 @@ def _get_auth_token():
     if 'HIPCHAT_V2_TOKEN' in os.environ:
         # prefer the newer api
         return ApiToken(os.environ['HIPCHAT_V2_TOKEN'], 2)
-
     elif 'HIPCHAT_V1_TOKEN' in os.environ:
         return ApiToken(os.environ['HIPCHAT_V1_TOKEN'], 1)
+
+    config = ConfigParser.ConfigParser()
+    try:
+        config.readfp(open('hipchav.cfg'))
+    except Exception as e:
+        raise HipChavError(e)
+
+    try:
+        v2_api_token = config.get('hipchat', 'v2_api_token')
+        if v2_api_token:
+            return ApiToken(v2_api_token, 2)
+    except ConfigParser.NoOptionError as e:
+        pass
+
+    try:
+        v1_api_token = config.get('hipchat', 'v1_api_token')
+        if v1_api_token:
+            return ApiToken(v1_api_token, 1)
+    except ConfigParser.NoOptionError as e:
+        pass
 
     raise HipChavError('please set HIPCHAT_V1_TOKEN or HIPCHAT_V2_TOKEN with '
                        'your credentials')
@@ -196,6 +215,8 @@ def main(argv):
         parser.print_help()
         sys.exit(1)
 
+def hipchat():
+    main(sys.argv[1:])
 
 if __name__ == '__main__':
     main(sys.argv[1:])
