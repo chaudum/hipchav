@@ -18,6 +18,9 @@ setup(
     author_email="lars@yencken.org",
     license="ISC",
     scripts=['hipchav.py'],
+    entry_points = {
+        'console_scripts': ['hipchat=hipchav:hipchat'],
+    },
     py_modules=['hipchav'],
     install_requires=['requests>=1.2.3'],
 )
